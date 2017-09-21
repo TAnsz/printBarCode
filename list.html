@@ -1,0 +1,436 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>标签批量打印</title>
+    <meta charset="utf-8" />
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/grid.min.css" rel="stylesheet" />
+    <link href="Content/gijgo.min.css" rel="stylesheet" />
+    <link href="Content/bootstrap-datepicker3.min.css" rel="stylesheet" />
+
+    <script src="Scripts/jquery-3.1.1.min.js"></script>
+    <script src="Scripts/jquery-migrate-1.2.1.min.js"></script>
+    <script src="Scripts/jquery-migrate-3.0.0.min.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
+    <script src="Scripts/jquery.jqprint-0.3.js"></script>
+    <script src="Scripts/jquery.tmpl.min.js"></script>
+    <script src="Scripts/jsqrcode.min.js"></script>
+    <script src="Scripts/gijgo.min.js"></script>
+    <script src="Scripts/bootstrap-datepicker.min.js"></script>
+    <script src="Scripts/locales/bootstrap-datepicker.zh-CN.min.js"></script>
+</head>
+<body>
+    <h1 class="container">固定资产标签批量打印</h1>
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12 btn-group">
+                <button id="btnAdd" type="button" class="btn btn-default"><i class="glyphicon glyphicon-plus"></i> 新增</button>
+                <button id="btnImport" type="button" class="btn btn-default hidden"><i class="glyphicon glyphicon-import"></i> 导入数据</button>
+                <button id="btnCreate" type="button" class="btn btn-default"><i class="glyphicon glyphicon-retweet"></i> 生成标签</button>
+                <button id="btnPrint" type="button" class="btn btn-default" disabled><i class="glyphicon glyphicon-print"></i> 打印标签</button>
+                <a id="btnSample" href="index.html" class="btn btn-default"><i class="glyphicon glyphicon-export"></i> 单个录入</a>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 10px">
+            <div class="col-xs-12">
+                <table id="grid"></table>
+            </div>
+        </div>
+        <div id="qrcode"></div>
+        <input type="file" id="file"
+               style="filter:alpha(opacity=0);opacity:0;width: 0;height: 0;" />
+    </div>
+    <div id="dialog" style="display:none">
+        <div data-role="body">
+            <div class="row">
+                <form class="form-horizontal col-sm-12" role="form">
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <input type="text" class="hidden" id="InputID">
+                            <div class="form-group">
+                                <label for="InputCode" class="col-sm-4 control-label">资产编码</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="InputCode" placeholder="输入编号">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="InputName" class="col-sm-4 control-label">资产名称</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="InputName" placeholder="输入名称">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="InputType" class="col-sm-4 control-label">资产型号</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="InputType" placeholder="输入型号">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="InputGDept" class="col-sm-4 control-label">管理部门</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="InputGDept" placeholder="输入管理部门">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="InputUDept" class="col-sm-4 control-label">使用部门</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="InputUDept" placeholder="输入使用部门">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="InputStatus" class="col-sm-4 control-label">使用状态</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="InputStatus" placeholder="输入使用状态">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="InputYears" class="col-sm-4 control-label">使用年限</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="InputYears" placeholder="输入使用年限">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="InputAddr" class="col-sm-4 control-label">使用地点</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" id="InputAddr" placeholder="输入使用地点">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="InputDate" class="col-sm-4 control-label">安装日期</label>
+                                <div class="col-sm-8" id="sandbox-container">
+                                    <div class="input-group date">
+                                        <input type="text" class="form-control" id="InputDate" placeholder="输入安装日期">
+                                        <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div data-role="footer">
+            <button type="button" class="btn btn-primary" data-role="close" id="btnCancel"><i class="glyphicon glyphicon-repeat"></i> 取消</button>
+            <button type="button" class="btn btn-primary" id="btnSave"><i class="glyphicon glyphicon-floppy-disk"></i> 保存</button>
+        </div>
+    </div>
+    <script>
+        var count, qr, data, grid;
+        $(document).ready(function () {
+            var editor, editordata;
+            editor = function ($container, currentValue) {
+                $container.append("<input type=\"text\" class=\"form-control\" value=\"" + currentValue + "\"/>");
+            };
+            editordata = function ($container, currentValue) {
+                $date = $("<input type=\"text\" class=\"form-control\" value=\"" + currentValue + "\"/>");
+                $date.datepicker({
+                    language: "zh-CN",
+                    //autoclose: true,
+                    todayBtn: "linked",
+                    todayHighlight: true
+                }).on(changeDate, function (e) {
+                    $date.prev().val(e);
+                });
+                $container.append($date);
+            };
+            var today = new Date()
+            data = [{
+                'ID': 1,
+                'Name': '',
+                'Code': '',
+                'Type': '',
+                'GDept': '',
+                'UDept': '',
+                'Status': '',
+                'Years': '',
+                'Addr': '',
+                'Date': today.getFullYear() + '年' +
+                    (today.getMonth() > 9 ? today.getMonth() + 1 : '0' + today.getMonth() + 1) + '月' +
+                    (today.getDate() > 9 ? today.getDate() : '0' + today.getDate()) + '日'
+            }];
+            grid = $('#grid').grid({
+                dataSource: data,
+                uiLibrary: 'bootstrap',
+                primaryKey: 'ID',
+                selectionMethod: 'checkbox',
+                selectionType: 'multiple',
+                autoLoad: true,
+                columns: [
+                    { field: 'ID', width: 32 },
+                    { field: 'Name', title: '资产名称', editor: editor },
+                    { field: 'Code', title: '资产编码', editor: editor },
+                    { field: 'Type', title: '资产型号', editor: editor },
+                    { field: 'GDept', title: '管理部门', editor: editor },
+                    { field: 'UDept', title: '使用部门', editor: editor },
+                    { field: 'Status', title: '使用状态', editor: editor },
+                    { field: 'Years', title: '使用年限', editor: editor },
+                    { field: 'Addr', title: '使用地点', editor: editor },
+                    { field: 'Date', title: '安装日期', width: 130, editor: editor },
+                    { field: 'QrImg', title: '二维码', width: 220, renderer: qrRenderer },
+                    { title: '', field: 'Print', width: 34, type: 'icon', icon: 'glyphicon-qrcode', tooltip: '单个标签打印', events: { 'click': PrintRow } },
+                    { title: '', field: 'Edit', width: 34, type: 'icon', icon: 'glyphicon-pencil', tooltip: '编辑', events: { 'click': Edit } },
+                    { title: '', field: 'Delete', width: 34, type: 'icon', icon: 'glyphicon-remove', tooltip: '删除', events: { 'click': Delete } }
+                ],
+                //pager: { limit: 20, sizes: [10, 20, 50, 100] }
+            });
+            $('#btnAdd').on('click', function () {
+                grid.addRow({
+                    'ID': grid.count(true) + 1,
+                    'Name': '',
+                    'Code': '',
+                    'Type': '',
+                    'GDept': '',
+                    'UDept': '',
+                    'Status': '',
+                    'Years': '',
+                    'Addr': '',
+                    'Date': today.getFullYear() + '年' +
+                    (today.getMonth() > 9 ? today.getMonth() + 1 : '0' + today.getMonth() + 1) + '月' +
+                    (today.getDate() > 9 ? today.getDate() : '0' + today.getDate()) + '日'
+                });
+            });
+
+            $('#btnCreate').on('click', function () {
+                var selections = grid.getSelections();
+                if (selections.length == 0) {
+                    alert('请选择明细数据');
+                    return;
+                }
+                $.each(selections, function () {
+                    var t = getQrText(grid.get(this));
+                    if (typeof (data[this - 1]) == 'undefined') {
+                        data[this - 1] = grid.get(this);
+                    }
+                    if (typeof (data[this - 1].qr) != 'undefined') {
+                        data[this - 1].qr.clear();
+                    }
+                    data[this - 1].qr = new QRCode('test' + this, {
+                        text: t,
+                        width: 200,
+                        height: 200
+                    });
+                });
+                $('#btnPrint').removeAttr('disabled')
+            });
+
+            $('#btnPrint').on('click', function () {
+                var selections = grid.getSelections();
+                if (selections.length == 0) {
+                    alert('请选择明细数据');
+                    return;
+                }
+                printImg(selections);
+            });
+
+            $('#btnImport').on('click', function () {
+                $("#file").val('');
+                $("#file").trigger("click");
+            });
+
+            $('#file').on('change', function () {
+                if (this.value == '') {
+                    return;
+                }
+                //清除标签
+                $.each(data, function () {
+                    if (typeof (this.qr) != 'undefined') {
+                        this.qr.clear();
+                    }
+                });
+                data = read_excel(this.value);
+                $('#btnPrint').attr('disabled', 'disabled');
+                grid.render(data);
+            });
+            if (isIE()) {
+                $('#btnImport').removeClass('hidden');
+            }
+            //初始化日期选择控件
+            $('#sandbox-container .date').datepicker({
+                language: "zh-CN",
+                autoclose: true,
+                todayBtn: "linked",
+                todayHighlight: true
+            });
+
+            //弹出编辑
+            dialog = $('#dialog').dialog({
+                uiLibrary: 'bootstrap',
+                title: '编辑数据',
+                autoOpen: false,
+                resizable: true,
+                width: 500,
+                minWidth: 300,
+                height: 600,
+                minHeight: 580,
+                maxHeight: 750,
+                modal: true
+            });
+
+            $('#btnSave').on('click', Save);
+        });
+
+        //删除
+        function Delete(e) {
+            if (confirm('Are you sure?')) {
+                grid.removeRow(e.data.id);
+            }
+        }
+        function PrintRow(e) {
+            printImg([e.data.record.ID]);
+        };
+
+        function qrRenderer(value, record, $cell, $displayEl) {
+            $cell.attr('class', 'qrcode');
+            $displayEl.attr('id', 'test' + record.ID);
+        }
+        //判断IE
+        function isIE() { //ie?
+            if (!!window.ActiveXObject || "ActiveXObject" in window)
+                return true;
+            else
+                return false;
+        }
+        //打印标签
+        function printImg(d) {
+            var printdata = [];
+            var errflag = false;
+            $.each(d, function () {
+                var record = grid.get(this);
+                if (typeof (data[record.ID - 1]) == 'undefined' || typeof (data[record.ID - 1].qr) == 'undefined') {
+                    alert('请先生成标签!');
+                    errflag = true;
+                    return;
+                } else {
+                    printdata.push({
+                        Code: getText(record.Code),
+                        Name: getText(record.Name),
+                        Dept: getText(record.Gdept),
+                        Addr: getText(record.Addr),
+                        Src: data[record.ID - 1].qr.getImage()
+                    });
+                }
+            })
+            if (errflag) {
+                return;
+            }
+            $('#ptmpl').tmpl(printdata).jqprint({
+                importCSS: false,
+                //debug: true
+            });
+        };
+
+        function getQrText(d) {
+            return "资产名称:" + getText(d.Name) + "\r\n" +
+                    "资产编码:" + getText(d.Code) + "\r\n" +
+                    "资产型号:" + getText(d.Type) + "\r\n" +
+                    "管理部门:" + getText(d.Gdept) + "\r\n" +
+                    "使用部门:" + getText(d.Udept) + "\r\n" +
+                    "使用状态:" + getText(d.Status) + "\r\n" +
+                    "使用年限:" + getText(d.Year) + "\r\n" +
+                    //"使用地点:" getText(d.Addr + "\r\n" +
+                    "安装日期:" + getText(d.Date) + "\r\n" +
+                    "................................................";
+        }
+
+        function getText(t) {
+            return t == null || typeof (t) == 'undefined' || t == 'undefined' ? '' : t;
+        }
+
+        function Save() {
+            var id = $('#InputID').val() ? parseInt($('#InputID').val()) : grid.count(true) + 1;
+            grid.updateRow(id,
+                {
+                    'ID': id,
+                    'Name': $('#InputName').val(),
+                    'Code': $('#InputCode').val(),
+                    'Type': $('#InputType').val(),
+                    'GDept': $('#InputGDept').val(),
+                    'UDept': $('#InputUDept').val(),
+                    'Status': $('#InputStatus').val(),
+                    'Years': $('#InputYears').val(),
+                    'Addr': $('#InputAddr').val(),
+                    'Date': $('#InputDate').val()
+                });
+            dialog.close();
+        }
+
+        function Edit(e) {
+            $('#InputID').val(e.data.id);
+            $('#InputName').val(e.data.record.Name);
+            $('#InputCode').val(e.data.record.Code);
+            $('#InputType').val(e.data.record.Type);
+            $('#InputGDept').val(e.data.record.GDept);
+            $('#InputUDept').val(e.data.record.UDept);
+            $('#InputStatus').val(e.data.record.Status);
+            $('#InputYears').val(e.data.record.Years);
+            $('#InputAddr').val(e.data.record.Addr);
+            $('#InputDate').val(e.data.record.Date);
+            $('#dialog').dialog('open');
+        }
+    </script>
+    <script>
+        function read_excel(filePath) {
+            if (filePath == '') {
+                return data;
+            }
+            var tempStr = [];
+            try {
+                var oXL = new ActiveXObject("Excel.application"); //创建Excel.Application对象
+            } catch (err) {
+                alert(err);
+            }
+            var oWB = oXL.Workbooks.open(filePath);
+            oWB.worksheets(1).select();
+            var oSheet = oWB.ActiveSheet;
+            var colcount = oXL.Worksheets(1).UsedRange.Cells.Rows.Count;
+
+            for (var i = 2; i <= colcount; i++) {
+                tempStr.push(
+                    {
+                        'ID': i - 1,
+                        'Name': oSheet.Cells(i, 1).value,
+                        'Code': oSheet.Cells(i, 2).value,
+                        'Type': oSheet.Cells(i, 3).value,
+                        'GDept': oSheet.Cells(i, 4).value,
+                        'UDept': oSheet.Cells(i, 5).value,
+                        'Status': oSheet.Cells(i, 6).value,
+                        'Years': oSheet.Cells(i, 7).value,
+                        'Addr': oSheet.Cells(i, 8).value,
+                        'Date': oSheet.Cells(i, 9).value
+                    });
+            }
+            oXL.Quit();
+            CollectGarbage();
+            return tempStr; //返回
+        }
+    </script>
+    <script id="ptmpl" type="text/x-jquery-tmpl">
+        <table style="padding:0px 0px 5px 5px;height:100px;width:302px;page-break-after: always;font-size:smaller;font-family:'Microsoft YaHei', Times, serif" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td style="border-bottom:2px solid;width:240px;font-size:medium" colspan="2">广州雷诺丽特塑料有限公司</td>
+                <td rowspan="6" style="border-left:2px solid">
+                    <img src="{{html Src}}" style="padding:5px;width:90px;height:90px;" />
+                </td>
+            </tr>
+            <tr>
+                <td style="width:70px;">资产编码:</td>
+                <td id="code" style="text-align:left;width:130px;">${Code}</td>
+            </tr>
+            <tr>
+                <td>资产名称:</td>
+                <td id="name" style="text-align:left;">${Name}</td>
+            </tr>
+            <tr>
+                <td>管理部门:</td>
+                <td id="dept" style="text-align:left;">${Dept}</td>
+            </tr>
+            <tr>
+                <td>使用地点:</td>
+                <td id="addr" style="text-align:left;">${Addr}</td>
+            </tr>
+            <tr style="height:auto;margin-top:5px"></tr>
+        </table>
+    </script>
+</body>
+</html>

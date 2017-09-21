@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8" />
+    <title>Create Barcode</title>
+    <link href="Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="Content/bootstrap-datepicker.min.css" rel="stylesheet" />
+
+    <script src="app.js"></script>
+    <script src="Scripts/jquery-3.1.1.min.js"></script>
+    <script src="Scripts/jquery-migrate-1.2.1.min.js"></script>
+    <script src="Scripts/jquery-migrate-3.0.0.min.js"></script>
+    <script src="Scripts/bootstrap.min.js"></script>
+    <script src="Scripts/bootstrap-datepicker.min.js"></script>
+    <script src="Scripts/locales/bootstrap-datepicker.zh-CN.min.js"></script>
+    <script src="Scripts/jquery.qrcode.min.js"></script>
+    <script src="Scripts/qrcode.min.js"></script>
+    <script src="Scripts/jquery.tmpl.min.js"></script>
+    <script src="Scripts/jquery.jqprint-0.3.js"></script>
+    <script src="Scripts/jsqrcode.min.js"></script>
+</head>
+<body>
+    <h1 class="text-center">固定资产标签打印</h1>
+    <div class="container">
+        <div class="row">
+            <form class="form-horizontal col-sm-12" role="form">
+                <div id="bar">
+                    <div class="form-group">
+                        <div class="col-sm-12" style="border-bottom:1px solid">
+                            <h3 class="">广州雷诺丽特塑料有限公司</h3>
+                        </div>
+                    </div>
+                    <div class="col-sm-6" style="border-right:1px solid">
+                        <div class="form-group">
+                            <label for="InputCode" class="col-sm-4 control-label">资产编码</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="InputCode" placeholder="输入编号">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="InputName" class="col-sm-4 control-label">资产名称</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="InputName" placeholder="输入名称">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="InputType" class="col-sm-4 control-label">资产型号</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="InputType" placeholder="输入型号">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="InputGDept" class="col-sm-4 control-label">管理部门</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="InputGDept" placeholder="输入管理部门">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="InputUDept" class="col-sm-4 control-label">使用部门</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="InputUDept" placeholder="输入使用部门">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="InputStatus" class="col-sm-4 control-label">使用状态</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="InputStatus" placeholder="输入使用状态">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="InputYear" class="col-sm-4 control-label">使用年限</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="InputYear" placeholder="输入使用年限">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="InputAddr" class="col-sm-4 control-label">使用地点</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" id="InputAddr" placeholder="输入使用地点">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="InputDate" class="col-sm-4 control-label">安装日期</label>
+                            <div class="col-sm-8" id="sandbox-container">
+                                <div class="input-group date">
+                                    <input type="text" class="form-control" id="InputDate" placeholder="输入安装日期">
+                                    <span class="input-group-addon"><i class="glyphicon glyphicon-th"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div id="qrcode"></div>
+                    </div>
+                </div>
+                <div class="form-group col-sm-12">
+                    <div class="col-sm-offset-1 col-sm-10 ">
+                        <button type="button" class="btn btn-primary btn-lg" onclick="PrintBarCode();"><i class="glyphicon glyphicon-print"></i> 打印标签</button>
+                        <button type="button" class="btn btn-primary btn-lg" onclick="ClearData();"><i class="glyphicon glyphicon-refresh"></i> 清空内容</button>
+                        <a href="list.html" class="btn btn-primary btn-lg"><i class="glyphicon glyphicon-align-justify"></i> 批量录入</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="row">
+            <div class="alert alert-danger col-sm-12 text-center" id="content"></div>
+        </div>
+    </div>
+    <script>
+        var qrcode;
+        $(function () {
+            $('#sandbox-container .date').datepicker({
+                language: "zh-CN",
+                autoclose: true,
+                todayBtn: "linked",
+                todayHighlight: true
+            });
+            //绑定值修改事件
+            $('input').change(function () {
+                CreatBarCode();
+            });
+        });
+        //清除内容
+        function ClearData() {
+            $("#InputName").val("");
+            $("#InputCode").val("");
+            $("#InputType").val("");
+            $("#InputGDept").val("");
+            $("#InputUDept").val("");
+            $("#InputStatus").val("");
+            $("#InputYear").val("");
+            $("#InputAddr").val("");
+            $("#InputDate").val("");
+            if (qrcode) {
+                qrcode.clear();
+            }
+        };
+        function CreatBarCode() {
+
+            //$('#qrcode').html("");
+            //$('#qrcode').qrcode(txt);
+            // 清除上一次的二维码
+            if (qrcode) {
+                qrcode.clear();
+            }
+
+            // 创建二维码
+            qrcode = new QRCode("qrcode", {
+                text: getText(),
+                //width: 100,
+                //height: 100
+            });
+
+            //qrcode.makeCode(txt);
+        };
+        function getText() {
+            return "资产名称:" + $("#InputName").val() + "\r\n" +
+                "资产编码:" + $("#InputCode").val() + "\r\n" +
+                "资产型号:" + $("#InputType").val() + "\r\n" +
+                "管理部门:" + $("#InputGDept").val() + "\r\n" +
+                "使用部门:" + $("#InputUDept").val() + "\r\n" +
+                "使用状态:" + $("#InputStatus").val() + "\r\n" +
+                "使用年限:" + $("#InputYear").val() + "\r\n" +
+                //"使用地点:" + $("#InputAddr").val() + "\r\n" +
+                "安装日期:" + $("#InputDate").val() + "\r\n" +
+                "................................................";
+        };
+        function PrintBarCode() {
+            if (!qrcode) {
+                CreatBarCode();
+            }
+            print();
+        };
+        //防止第一次点击打印时，图片还未生成
+        function print() {
+            var imgdata = qrcode.getImage();
+            if (imgdata.length > 0) {
+                $('#ptmpl').tmpl([{
+                    Code: $("#InputCode").val(),
+                    Name: $("#InputName").val(),
+                    Dept: $("#InputGDept").val(),
+                    Addr: $("#InputAddr").val(),
+                    Src: qrcode.getImage()
+                }]).jqprint({
+                    importCSS: false,
+                    debug: true
+                });
+            } else {
+                setTimeout(function () {
+                    print();
+                }, 300);
+            }
+        }
+    </script>
+    <script id="ptmpl" type="text/x-jquery-tmpl">
+        <table style="padding:0px 0px 5px 5px;height:100px;width:302px;page-break-after: always;font-size:smaller;font-family:'Microsoft YaHei', Times, serif" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+                <td style="border-bottom:2px solid;width:240px;font-size:medium" colspan="2">广州雷诺丽特塑料有限公司</td>
+                <td rowspan="6" style="border-left:2px solid">
+                    <img src="{{html Src}}" style="padding:5px;width:90px;height:90px;" />
+                </td>
+            </tr>
+            <tr>
+                <td style="width:70px;">资产编码:</td>
+                <td id="code" style="text-align:left;width:130px;">${Code}</td>
+            </tr>
+            <tr>
+                <td>资产名称:</td>
+                <td id="name" style="text-align:left;">${Name}</td>
+            </tr>
+            <tr>
+                <td>管理部门:</td>
+                <td id="dept" style="text-align:left;">${Dept}</td>
+            </tr>
+            <tr>
+                <td>使用地点:</td>
+                <td id="addr" style="text-align:left;">${Addr}</td>
+            </tr>
+            <tr style="height:auto;margin-top:5px"></tr>
+        </table>
+    </script>
+</body>
+</html>
