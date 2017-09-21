@@ -1,4 +1,4 @@
-# printtest
+# printBarCode
 ## 网页输入资料打印二维码
 ----
     支持 IE 导入 Excel ，自动生成多行数据
